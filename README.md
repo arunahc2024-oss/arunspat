@@ -1,2 +1,676 @@
-# arunspat
-Architect ArunSpat
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARUNSPAT — Architect</title>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@100;200;300;400&family=Open+Sans:ital,wght@0,300;0,400;1,300&family=Playfair+Display:ital,wght@1,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#050505;--bg2:#0d0d0d;--card:#101010;
+  --white:#ede8e0;--dim:rgba(237,232,224,.38);--dimmer:rgba(237,232,224,.16);
+  --border:rgba(237,232,224,.09);--border2:rgba(237,232,224,.05);
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--white);font-family:'Open Sans',sans-serif;font-weight:300;overflow-x:hidden;cursor:none;}
+
+/* GRAIN */
+body::before{content:’’;position:fixed;inset:0;background-image:url(“data:image/svg+xml,%3Csvg viewBox=‘0 0 512 512’ xmlns=‘http://www.w3.org/2000/svg’%3E%3Cfilter id=‘g’%3E%3CfeTurbulence type=‘fractalNoise’ baseFrequency=’.75’ numOctaves=‘4’ stitchTiles=‘stitch’/%3E%3C/filter%3E%3Crect width=‘100%25’ height=‘100%25’ filter=‘url(%23g)’ opacity=’.04’/%3E%3C/svg%3E”);pointer-events:none;z-index:9000;mix-blend-mode:screen;opacity:.7;}
+
+/* CURSOR */
+.cursor{width:5px;height:5px;background:var(–white);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s,border .2s;}
+.cursor-ring{width:26px;height:26px;border:1px solid rgba(237,232,224,.35);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);}
+body.hovering .cursor{width:34px;height:34px;background:transparent;border:1px solid var(–white);}
+body.hovering .cursor-ring{opacity:0;}
+
+/* ══════════════════════════════
+LOADER
+══════════════════════════════ */
+#loader{position:fixed;inset:0;background:#020202;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:8000;transition:opacity 1.4s ease .3s,visibility 1.4s ease .3s;}
+#loader.hide{opacity:0;visibility:hidden;}
+
+/* Rotating triangle loop */
+.tri-loader{position:relative;width:120px;height:120px;margin-bottom:2.5rem;}
+.tri-loader svg{width:100%;height:100%;animation:triSpin 3s linear infinite;}
+.tri-loader .tri-track{fill:none;stroke:rgba(237,232,224,.06);stroke-width:1.5;}
+.tri-loader .tri-arc{fill:none;stroke:var(–white);stroke-width:1.5;stroke-linecap:round;stroke-dasharray:60 280;stroke-dashoffset:0;animation:triDash 3s linear infinite;}
+.tri-loader .tri-inner{fill:none;stroke:rgba(237,232,224,.18);stroke-width:.8;animation:triSpinRev 4s linear infinite;}
+.tri-loader .tri-dot{fill:var(–white);animation:triDotPulse 1.5s ease-in-out infinite;}
+
+@keyframes triSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes triSpinRev{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
+@keyframes triDash{0%{stroke-dashoffset:0}100%{stroke-dashoffset:-340}}
+@keyframes triDotPulse{0%,100%{opacity:.3;r:2}50%{opacity:1;r:3.5}}
+
+.loader-wordmark{font-family:‘Josefin Sans’,sans-serif;font-weight:100;font-size:clamp(1.8rem,6vw,3.5rem);letter-spacing:1em;text-transform:uppercase;color:var(–white);opacity:0;animation:fadeSlowIn 1.6s ease .4s forwards;padding-right:1em;}
+.loader-rule{margin-top:1.6rem;width:0;height:1px;background:rgba(237,232,224,.25);animation:expandRule 1.8s ease 1s forwards;}
+.loader-sub{margin-top:1.2rem;font-family:‘Josefin Sans’,sans-serif;font-weight:100;font-size:.52rem;letter-spacing:.7em;color:var(–dim);opacity:0;animation:fadeIn .8s ease 2s forwards;text-transform:uppercase;}
+.loader-dots{display:flex;gap:.6rem;margin-top:1rem;}
+.loader-dots span{width:4px;height:4px;border-radius:50%;background:rgba(237,232,224,.22);}
+.loader-dots span:nth-child(1){animation:dp 1.5s ease 2.1s infinite;}
+.loader-dots span:nth-child(2){animation:dp 1.5s ease 2.3s infinite;}
+.loader-dots span:nth-child(3){animation:dp 1.5s ease 2.5s infinite;}
+
+@keyframes fadeSlowIn{from{opacity:0;letter-spacing:.55em}to{opacity:1;letter-spacing:1em}}
+@keyframes expandRule{to{width:180px}}
+@keyframes fadeIn{to{opacity:1}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+@keyframes dp{0%,100%{opacity:.15}50%{opacity:.85}}
+@keyframes scrollDrop{0%{transform:scaleY(0);transform-origin:top;opacity:1}50%{transform:scaleY(1);transform-origin:top;opacity:1}51%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom;opacity:0}}
+
+/* ══════════════════════════════
+NAV
+══════════════════════════════ */
+nav{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:1.8rem 3.5rem;z-index:500;transition:background .5s,border-bottom .5s,padding .4s;}
+nav.scrolled{background:rgba(5,5,5,.94);backdrop-filter:blur(20px);border-bottom:1px solid var(–border2);padding-top:1.2rem;padding-bottom:1.2rem;}
+.nav-logo{font-family:‘Josefin Sans’,sans-serif;font-weight:100;font-size:.8rem;letter-spacing:.5em;color:var(–white);text-decoration:none;text-transform:uppercase;cursor:none;}
+.nav-links{display:flex;gap:3rem;}
+.nav-links a{font-family:‘Josefin Sans’,sans-serif;font-weight:100;font-size:.6rem;letter-spacing:.4em;color:var(–dim);text-decoration:none;text-transform:uppercase;position:relative;transition:color .3s;cursor:none;}
+.nav-links a::after{content:’’;position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(–white);transition:width .35s ease;}
+.nav-links a:hover{color:var(–white);}
+.nav-links a:hover::after{width:100%;}
+
+/* ══════════════════════════════
+HERO
+══════════════════════════════ */
+#hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+
+/* Greek god canvas BG */
+#godCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;}
+
+/* Water ripple canvas */
+#rippleCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;}
+
+/* Subtle vignette over everything */
+.hero-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 25%,rgba(5,5,5,.75) 100%);z-index:2;pointer-events:none;}
+
+/* Grid lines */
+.hero-grid{position:absolute;inset:0;display:grid;grid-template-columns:repeat(6,1fr);pointer-events:none;opacity:.035;z-index:3;}
+.hero-grid span{border-right:1px solid var(–white);}
+
+.hero-hline{position:absolute;width:100%;height:1px;background:linear-gradient(to right,transparent 0%,rgba(255,255,255,.055) 30%,rgba(255,255,255,.055) 70%,transparent 100%);top:38%;animation:hlineFloat 6s ease-in-out infinite;z-index:3;}
+@keyframes hlineFloat{0%,100%{top:38%;opacity:.5}50%{top:40%;opacity:1}}
+
+.hero-content{text-align:center;position:relative;z-index:4;}
+.hero-pre{font-family:‘Josefin Sans’,sans-serif;font-weight:100;font-size:.5rem;letter-spacing:.9em;color:var(–dimmer);margin-bottom:2rem;text-transform:uppercase;opacity:0;animation:fadeUp .8s ease 3.4s forwards;}
+.hero-name{font-family:‘Josefin Sans’,sans-serif;font-weight:100;font-size:clamp(3.8rem,15vw,12rem);letter-spacing:.25em;line-height:1;text-transform:uppercase;color:var(–white);padding-right:.25em;opacity:0;animation:heroReveal 1.4s ease 3.6s forwards;}
+@keyframes heroReveal{from{opacity:0;letter-spacing:.45em;filter:blur(8px)}to{opacity:1;letter-spacing:.25em;filter:blur(0)}}
+.hero-rule{display:flex;align-items:center;justify-content:center;gap:1.2rem;margin:2rem 0;opacity:0;animation:fadeIn .8s ease 4.2s forwards;}
+.hero-rule-line{width:40px;height:1px;background:rgba(237,232,224,.25);}
+.hero-rule-diamond{width:5px;height:5px;border:1px solid rgba(237,232,224,.5);transform:rotate(45deg);}
+.hero-sub{font-family:‘Josefin Sans’,sans-serif;font-weight:100;font-size:.58rem;letter-spacing:.55em;color:var(–dim);text-transform:uppercase;padding-right:.55em;opacity:0;animation:fadeUp .8s ease 4.4s forwards;}
+
+.scroll-cue{position:absolute;bottom:2.8rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.7rem;opacity:0;animation:fadeIn 1s ease 5s forwards;z-index:4;}
+.scroll-cue-label{font-family:‘Josefin Sans’,sans-serif;font-weight:100;font-size:.45rem;letter-spacing:.6em;color:var(–dimmer);text-transform:uppercase;}
+.scroll-cue-line{width:1px;height:44px;background:linear-gradient(to bottom,rgba(237,232,224,.35),transparent);animation:scrollDrop 2.8s ease-in-out infinite;}
+
+/* ══════════════════════════════
+SECTIONS
+══════════════════════════════ */
+.section{padding:9rem 0;max-width:900px;margin:0 auto;padding-left:3.5rem;padding-right:3.5rem;}
+.section-sep{border-top:1px solid var(–border2);}
+.s-label{font-family:‘Josefin Sans’,sans-serif;font-weight:100;font-size:.5rem;letter-spacing:.8em;color:var(–dimmer);text-transform:uppercase;margin-bottom:5rem;display:flex;align-items:center;gap:1.5rem;}
+.s-label::after{content:’’;flex:1;height:1px;background:linear-gradient(to right,var(–border),transparent);}
+
+/* ── WORKS ── */
+.works-timeline{position:relative;}
+.works-timeline::before{content:’’;position:absolute;left:0;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,transparent,rgba(237,232,224,.14) 15%,rgba(237,232,224,.14) 85%,transparent);}
+.work-item{padding:3rem 1.5rem 3rem 3.5rem;position:relative;cursor:none;border-bottom:1px solid var(–border2);opacity:0;transform:translateX(-24px);transition:opacity .7s ease,transform .7s ease;}
+.work-item:first-child{border-top:1px solid var(–border2);}
+.work-item.visible{opacity:1;transform:translateX(0);}
+.work-item::before{content:’’;position:absolute;inset:0;background:linear-gradient(to right,rgba(255,255,255,.022),transparent 60%);opacity:0;transition:opacity .4s;}
+.work-item:hover::before{opacity:1;}
+.work-dot{position:absolute;left:-5px;top:3.4rem;width:9px;height:9px;border-radius:50%;background:var(–bg);border:1px solid rgba(237,232,224,.22);transition:all .3s;}
+.work-item:hover .work-dot{background:var(–white);border-color:var(–white);box-shadow:0 0 14px rgba(237,232,224,.4);}
+.work-year{font-family:‘Josefin Sans’,sans-serif;font-weight:100;font-size:.5rem;letter-spacing:.5em;color:var(–dimmer);text-transform:uppercase;margin-bottom:.8rem;}
+.work-title{font-family:‘Josefin Sans’,sans-serif;font-weight:200;font-size:clamp(2rem,5vw,3.2rem);letter-spacing:.06em;line-height:1.1;text-transform:uppercase;transition:letter-spacing .4s,color .3s;}
+.work-item:hover .work-title{letter-spacing:.1em;color:rgba(237,232,224,.85);}
+.work-sub{margin-top:.6rem;font-family:‘Playfair Display’,serif;font-style:italic;font-weight:300;font-size:.85rem;color:var(–dim);}
+.work-cta{position:absolute;right:1.5rem;top:50%;transform:translateY(-50%);font-family:‘Josefin Sans’,sans-serif;font-weight:100;font-size:.5rem;letter-spacing:.4em;color:var(–dimmer);text-transform:uppercase;opacity:0;transition:opacity .3s,transform .3s;}
+.work-item:hover .work-cta{opacity:1;transform:translateY(-50%) translateX(4px);}
+
+/* ── ABOUT ── */
+.about-text{font-family:‘Open Sans’,sans-serif;font-weight:300;font-size:clamp(1rem,2vw,1.25rem);line-height:2;color:rgba(237,232,224,.78);}
+.about-bottom{margin-top:3.5rem;display:flex;align-items:center;gap:2rem;}
+.about-bottom-line{flex:1;height:1px;background:linear-gradient(to right,rgba(237,232,224,.1),transparent);}
+.about-sig{font-family:‘Josefin Sans’,sans-serif;font-weight:100;font-size:.5rem;letter-spacing:.5em;color:var(–dimmer);text-transform:uppercase;white-space:nowrap;}
+
+/* ── CONTACT ── */
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+@media(max-width:560px){.contact-grid{grid-template-columns:1fr;}}
+.contact-card{border:1px solid var(–border2);background:var(–card);padding:3rem 2rem;text-align:center;position:relative;overflow:hidden;transition:border-color .4s;}
+.contact-card::before{content:’’;position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(237,232,224,.04) 0%,transparent 70%);opacity:0;transition:opacity .4s;}
+.contact-card:hover{border-color:rgba(237,232,224,.18);}
+.contact-card:hover::before{opacity:1;}
+.cc-icon{width:50px;height:50px;border:1px solid var(–border);display:flex;align-items:center;justify-content:center;margin:0 auto 1.8rem;font-size:1.1rem;transition:border-color .3s,box-shadow .3s;}
+.contact-card:hover .cc-icon{border-color:rgba(237,232,224,.28);box-shadow:0 0 20px rgba(237,232,224,.05);}
+.cc-title{font-family:‘Josefin Sans’,sans-serif;font-weight:200;font-size:1rem;letter-spacing:.2em;text-transform:uppercase;margin-bottom:1rem;}
+.cc-sub{font-family:‘Playfair Display’,serif;font-style:italic;font-weight:300;font-size:.8rem;color:var(–dim);margin-bottom:.6rem;}
+.cc-val{font-family:‘Josefin Sans’,sans-serif;font-weight:200;font-size:.8rem;letter-spacing:.1em;color:rgba(237,232,224,.88);}
+
+.social-row{display:flex;justify-content:center;gap:1.5rem;margin-top:4rem;padding-top:3.5rem;border-top:1px solid var(–border2);}
+.soc{width:40px;height:40px;border:1px solid var(–border2);display:flex;align-items:center;justify-content:center;color:var(–dim);text-decoration:none;font-family:‘Josefin Sans’,sans-serif;font-weight:100;font-size:.6rem;letter-spacing:.05em;transition:border-color .3s,color .3s,transform .3s;cursor:none;}
+.soc:hover{border-color:rgba(237,232,224,.35);color:var(–white);transform:translateY(-3px);}
+
+footer{padding:3rem;text-align:center;border-top:1px solid var(–border2);font-family:‘Josefin Sans’,sans-serif;font-weight:100;font-size:.45rem;letter-spacing:.5em;color:var(–dimmer);text-transform:uppercase;}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(3,3,3,.98);z-index:3000;opacity:0;visibility:hidden;transition:opacity .5s,visibility .5s;overflow-y:auto;}
+.modal-overlay.open{opacity:1;visibility:visible;}
+.modal-inner{min-height:100vh;max-width:760px;margin:0 auto;padding:7rem 3.5rem 5rem;transform:translateY(36px);transition:transform .55s ease;position:relative;}
+.modal-overlay.open .modal-inner{transform:translateY(0);}
+.modal-inner::before{content:’’;position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(237,232,224,.013) 0px,rgba(237,232,224,.013) 1px,transparent 1px,transparent 70px);pointer-events:none;}
+.modal-close{position:fixed;top:1.6rem;right:2.5rem;width:38px;height:38px;border:1px solid var(–border);background:rgba(3,3,3,.9);color:var(–dim);cursor:none;display:flex;align-items:center;justify-content:center;font-family:‘Josefin Sans’,sans-serif;font-weight:100;font-size:.85rem;transition:border-color .3s,color .3s;z-index:3100;}
+.modal-close:hover{border-color:rgba(237,232,224,.4);color:var(–white);}
+.m-cat{font-family:‘Josefin Sans’,sans-serif;font-weight:100;font-size:.5rem;letter-spacing:.7em;color:var(–dimmer);text-transform:uppercase;margin-bottom:1.2rem;}
+.m-title{font-family:‘Josefin Sans’,sans-serif;font-weight:100;font-size:clamp(2.8rem,9vw,5.5rem);letter-spacing:.12em;line-height:1.05;text-transform:uppercase;margin-bottom:1.2rem;}
+.m-meta{font-family:‘Playfair Display’,serif;font-style:italic;font-weight:300;font-size:.9rem;color:var(–dim);margin-bottom:2.5rem;}
+.m-rule{height:1px;background:linear-gradient(to right,rgba(237,232,224,.14),transparent);margin:2rem 0;}
+.m-desc{font-family:‘Open Sans’,sans-serif;font-weight:300;font-size:1.05rem;line-height:1.95;color:rgba(237,232,224,.76);margin-bottom:3rem;}
+.m-specs{display:grid;grid-template-columns:1fr 1fr;gap:2.5rem 3rem;border:1px solid var(–border2);padding:2.5rem;background:rgba(237,232,224,.016);}
+@media(max-width:480px){.m-specs{grid-template-columns:1fr;}}
+.ms-label{font-family:‘Josefin Sans’,sans-serif;font-weight:100;font-size:.45rem;letter-spacing:.6em;color:var(–dimmer);text-transform:uppercase;margin-bottom:.5rem;}
+.ms-val{font-family:‘Josefin Sans’,sans-serif;font-weight:200;font-size:.95rem;letter-spacing:.08em;}
+.m-scroll{margin-top:3.5rem;text-align:center;display:flex;flex-direction:column;align-items:center;gap:.6rem;font-family:‘Josefin Sans’,sans-serif;font-weight:100;font-size:.45rem;letter-spacing:.55em;color:var(–dimmer);text-transform:uppercase;}
+.m-scroll-line{width:1px;height:32px;background:linear-gradient(to bottom,rgba(237,232,224,.28),transparent);animation:scrollDrop 2.5s ease infinite;}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+</style>
+
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cring"></div>
+
+<!-- ══ LOADER ══ -->
+
+<div id="loader">
+  <!-- Animated triangle loop SVG -->
+  <div class="tri-loader">
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <!-- outer triangle track -->
+      <polygon class="tri-track" points="50,4 96,88 4,88"/>
+      <!-- outer triangle arc (animated stroke) -->
+      <polygon class="tri-arc" points="50,4 96,88 4,88"/>
+      <!-- inner rotating triangle -->
+      <g style="transform-origin:50px 50px">
+        <polygon class="tri-inner" points="50,22 78,68 22,68" style="transform-origin:50px 50px;animation:triSpinRev 4s linear infinite;"/>
+      </g>
+      <!-- smallest inner triangle -->
+      <polygon style="fill:none;stroke:rgba(237,232,224,.08);stroke-width:.6;" points="50,36 65,58 35,58"/>
+      <!-- center dot -->
+      <circle class="tri-dot" cx="50" cy="50" r="2.5"/>
+      <!-- corner dots -->
+      <circle fill="rgba(237,232,224,.3)" cx="50" cy="4"  r="2"/>
+      <circle fill="rgba(237,232,224,.3)" cx="96" cy="88" r="2"/>
+      <circle fill="rgba(237,232,224,.3)" cx="4"  cy="88" r="2"/>
+    </svg>
+  </div>
+  <div class="loader-wordmark">Arunspat</div>
+  <div class="loader-rule"></div>
+  <div class="loader-sub">Loading</div>
+  <div class="loader-dots"><span></span><span></span><span></span></div>
+</div>
+
+<!-- ══ NAV ══ -->
+
+<nav id="nav">
+  <a href="#hero" class="nav-logo" id="navLogo">Arunspat</a>
+  <div class="nav-links">
+    <a href="#work"    id="navWork">Work</a>
+    <a href="#about"   id="navAbout">About</a>
+    <a href="#contact" id="navContact">Contact</a>
+  </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+
+<section id="hero">
+  <!-- Greek god painted canvas background -->
+  <canvas id="godCanvas"></canvas>
+  <!-- Water ripple canvas (interactive) -->
+  <canvas id="rippleCanvas"></canvas>
+
+  <div class="hero-vignette"></div>
+  <div class="hero-grid"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="hero-hline"></div>
+
+  <div class="hero-content">
+    <div class="hero-pre">Est. MMXXIV &nbsp;·&nbsp; Tamil Nadu, India</div>
+    <h1 class="hero-name">Arunspat</h1>
+    <div class="hero-rule">
+      <div class="hero-rule-line"></div>
+      <div class="hero-rule-diamond"></div>
+      <div class="hero-rule-line"></div>
+    </div>
+    <p class="hero-sub">Architect &nbsp;|&nbsp; Designer &nbsp;|&nbsp; Vision in Time</p>
+  </div>
+  <div class="scroll-cue">
+    <span class="scroll-cue-label">Scroll</span>
+    <div class="scroll-cue-line"></div>
+  </div>
+</section>
+
+<!-- ══ WORKS ══ -->
+
+<section id="work" class="section section-sep">
+  <div class="s-label reveal">Selected Works</div>
+  <div class="works-timeline">
+    <div class="work-item" data-project="0">
+      <div class="work-dot"></div>
+      <div class="work-year">2 0 2 4</div>
+      <div class="work-title">High Court Project</div>
+      <div class="work-sub">A study in judicial permanence</div>
+      <div class="work-cta">View →</div>
+    </div>
+    <div class="work-item" data-project="1">
+      <div class="work-dot"></div>
+      <div class="work-year">2 0 2 3</div>
+      <div class="work-title">Clubhouse Design</div>
+      <div class="work-sub">Community through architecture</div>
+      <div class="work-cta">View →</div>
+    </div>
+    <div class="work-item" data-project="2">
+      <div class="work-dot"></div>
+      <div class="work-year">2 0 2 2</div>
+      <div class="work-title">Facade Study</div>
+      <div class="work-sub">The face of modernity</div>
+      <div class="work-cta">View →</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ABOUT ══ -->
+
+<section id="about" class="section section-sep">
+  <div class="s-label reveal">About Me</div>
+  <p class="about-text reveal">
+    I don't just design spaces. I design moments in time. My work exists between structure and story — where architecture becomes more than function, and begins to shape experience. Inspired by complexity, precision, and the unseen connections between spaces, I approach every project as part of a larger narrative. From institutional buildings to intimate design interventions, my focus remains the same — clarity, depth, and purpose. Because in architecture, like time… the beginning is never the end.
+  </p>
+  <div class="about-bottom reveal">
+    <div class="about-bottom-line"></div>
+    <div class="about-sig">Arunspat &nbsp;·&nbsp; Architect</div>
+    <div class="about-bottom-line" style="transform:scaleX(-1)"></div>
+  </div>
+</section>
+
+<!-- ══ CONTACT ══ -->
+
+<section id="contact" class="section section-sep">
+  <div class="s-label reveal">Contact</div>
+  <div class="contact-grid">
+    <div class="contact-card reveal">
+      <div class="cc-icon">✆</div>
+      <div class="cc-title">Phone</div>
+      <div class="cc-sub">Weekdays, 8am – 5pm</div>
+      <div class="cc-val">+91 9940769566</div>
+    </div>
+    <div class="contact-card reveal" style="transition-delay:.15s">
+      <div class="cc-icon">◎</div>
+      <div class="cc-title">Visit</div>
+      <div class="cc-sub">Stop by our studio office.</div>
+      <div class="cc-val">Tamil Nadu, India</div>
+    </div>
+  </div>
+  <div class="social-row reveal">
+    <a href="#" class="soc">Ig</a>
+    <a href="#" class="soc">Fb</a>
+    <a href="#" class="soc">in</a>
+    <a href="#" class="soc">Be</a>
+    <a href="#" class="soc">♫</a>
+  </div>
+</section>
+
+<footer>© Arunspat &nbsp;·&nbsp; Architect &nbsp;·&nbsp; Tamil Nadu, India</footer>
+
+<!-- ══ MODAL ══ -->
+
+<div class="modal-overlay" id="modal">
+  <button class="modal-close" id="mClose">✕</button>
+  <div class="modal-inner">
+    <div class="m-cat"   id="mCat"></div>
+    <h2 class="m-title"  id="mTitle"></h2>
+    <div class="m-meta"  id="mMeta"></div>
+    <div class="m-rule"></div>
+    <p class="m-desc"    id="mDesc"></p>
+    <div class="m-specs" id="mSpecs"></div>
+    <div class="m-scroll"><span>Scroll to Explore</span><div class="m-scroll-line"></div></div>
+  </div>
+</div>
+
+<script>
+/* ══ PROJECTS DATA ══ */
+const projects=[
+  {cat:"Institutional",title:"High Court\nProject",meta:"2024 — Chennai, Tamil Nadu",
+   desc:"A monumental study in judicial permanence. This high court complex embodies the weight and gravity of law through its imposing concrete volumes and deliberate spatial hierarchy. The design creates a powerful civic presence while maintaining accessibility and human scale through carefully orchestrated entry sequences and natural light interventions.",
+   specs:[{l:"Area",v:"45,000 sq.m"},{l:"Status",v:"In Construction"},{l:"Client",v:"State Government"},{l:"Team",v:"Lead Architect"}]},
+  {cat:"Community",title:"Clubhouse\nDesign",meta:"2023 — Tamil Nadu",
+   desc:"A space conceived as a living threshold — where private life meets collective memory. The clubhouse unfolds through layered courtyards and shaded pavilions, inviting residents to gather, linger, and belong. Every detail speaks to community through architecture.",
+   specs:[{l:"Area",v:"8,200 sq.m"},{l:"Status",v:"Completed"},{l:"Client",v:"Private Developer"},{l:"Team",v:"Design Lead"}]},
+  {cat:"Study",title:"Facade\nStudy",meta:"2022 — Tamil Nadu",
+   desc:"An investigation into the surface as narrative. This facade study deconstructs conventional cladding into a dynamic, breathing skin — one that shifts with light, casts dramatic shadows, and communicates the internal life of the building to those passing by.",
+   specs:[{l:"Area",v:"2,400 sq.m"},{l:"Status",v:"Completed"},{l:"Client",v:"Residential Complex"},{l:"Team",v:"Lead Designer"}]}
+];
+
+/* ══ CURSOR ══ */
+const cur=document.getElementById('cursor'),cr=document.getElementById('cring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+(function loop(){
+  rx+=(mx-rx)*.13;ry+=(my-ry)*.13;
+  cur.style.transform=`translate(${mx}px,${my}px) translate(-50%,-50%)`;
+  cr.style.transform=`translate(${rx}px,${ry}px) translate(-50%,-50%)`;
+  requestAnimationFrame(loop);
+})();
+document.querySelectorAll('a,button,.work-item').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('hovering'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('hovering'));
+});
+
+/* ══ LOADER ══ */
+window.addEventListener('load',()=>{
+  setTimeout(()=>document.getElementById('loader').classList.add('hide'),3000);
+});
+
+/* ══ NAV SCROLL ══ */
+window.addEventListener('scroll',()=>{
+  document.getElementById('nav').classList.toggle('scrolled',scrollY>60);
+});
+
+/* ══ SMOOTH NAV SCROLL ══ */
+function scrollTo(id){
+  document.getElementById(id).scrollIntoView({behavior:'smooth'});
+}
+document.getElementById('navLogo').addEventListener('click',e=>{e.preventDefault();scrollTo('hero');});
+document.getElementById('navWork').addEventListener('click',e=>{e.preventDefault();scrollTo('work');});
+document.getElementById('navAbout').addEventListener('click',e=>{e.preventDefault();scrollTo('about');});
+document.getElementById('navContact').addEventListener('click',e=>{e.preventDefault();scrollTo('contact');});
+
+/* ══ SCROLL REVEAL ══ */
+const obs=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible');}),{threshold:.12});
+document.querySelectorAll('.reveal,.work-item,.about-text,.contact-card,.social-row').forEach(el=>obs.observe(el));
+document.querySelectorAll('.work-item').forEach((el,i)=>el.style.transitionDelay=`${i*.13}s`);
+
+/* ══ MODAL ══ */
+const modal=document.getElementById('modal');
+document.querySelectorAll('.work-item').forEach(el=>{
+  el.addEventListener('click',()=>{
+    const p=projects[+el.dataset.project];
+    document.getElementById('mCat').textContent=p.cat;
+    document.getElementById('mTitle').innerHTML=p.title.replace('\n','<br>');
+    document.getElementById('mMeta').textContent=p.meta;
+    document.getElementById('mDesc').textContent=p.desc;
+    document.getElementById('mSpecs').innerHTML=p.specs.map(s=>`<div><div class="ms-label">${s.l}</div><div class="ms-val">${s.v}</div></div>`).join('');
+    modal.classList.add('open');document.body.style.overflow='hidden';modal.scrollTop=0;
+  });
+});
+function closeModal(){modal.classList.remove('open');document.body.style.overflow='';}
+document.getElementById('mClose').addEventListener('click',closeModal);
+modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+/* ══════════════════════════════════════════
+   GREEK GOD CANVAS — procedural dark statue
+══════════════════════════════════════════ */
+(function(){
+  const canvas=document.getElementById('godCanvas');
+  const ctx=canvas.getContext('2d');
+  let W,H,t=0;
+
+  function resize(){
+    W=canvas.width=canvas.offsetWidth;
+    H=canvas.height=canvas.offsetHeight;
+  }
+  window.addEventListener('resize',resize);
+  resize();
+
+  // Draw a ghostly Greek god figure using bezier curves
+  function drawGod(alpha, breathe){
+    ctx.save();
+    ctx.globalAlpha=alpha;
+
+    const cx=W*0.5, cy=H*0.52;
+    const scale=Math.min(W,H)*0.0022;
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(scale, scale);
+
+    // Slight breathing transform
+    ctx.translate(0, Math.sin(breathe)*4);
+
+    const g = ctx.createLinearGradient(0,-200, 0, 220);
+    g.addColorStop(0, 'rgba(200,195,185,0.18)');
+    g.addColorStop(0.4,'rgba(180,175,165,0.1)');
+    g.addColorStop(1, 'rgba(140,135,125,0.0)');
+    ctx.strokeStyle=g;
+    ctx.lineWidth=1.4;
+    ctx.lineCap='round';
+    ctx.lineJoin='round';
+
+    // HEAD
+    ctx.beginPath();
+    ctx.ellipse(0,-195,28,34,0,0,Math.PI*2);
+    ctx.stroke();
+
+    // NECK
+    ctx.beginPath();
+    ctx.moveTo(-10,-162);ctx.lineTo(-12,-145);
+    ctx.moveTo(10,-162);ctx.lineTo(12,-145);
+    ctx.stroke();
+
+    // SHOULDERS / TOGA drape
+    ctx.beginPath();
+    ctx.moveTo(-12,-145);
+    ctx.bezierCurveTo(-80,-130,-100,-80,-90,0);
+    ctx.bezierCurveTo(-85,60,-70,100,-60,140);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(12,-145);
+    ctx.bezierCurveTo(80,-130,100,-80,90,0);
+    ctx.bezierCurveTo(85,60,70,100,60,140);
+    ctx.stroke();
+
+    // Toga center fold
+    ctx.beginPath();
+    ctx.moveTo(0,-140);
+    ctx.bezierCurveTo(-10,-60,10,20,0,140);
+    ctx.stroke();
+
+    // Toga horizontal folds
+    [-100,-50,0,50,100].forEach(y=>{
+      ctx.beginPath();
+      const sway=Math.sin(breathe+y*.02)*6;
+      ctx.moveTo(-85+sway,y);
+      ctx.bezierCurveTo(-40+sway,y+8,40-sway,y-8,85-sway,y);
+      ctx.globalAlpha=alpha*0.5;
+      ctx.stroke();
+      ctx.globalAlpha=alpha;
+    });
+
+    // Left arm
+    ctx.beginPath();
+    ctx.moveTo(-90,-80);
+    ctx.bezierCurveTo(-110,-40,-115,20,-100,80);
+    ctx.stroke();
+
+    // Right arm raised (holding something — laurel/staff)
+    ctx.beginPath();
+    ctx.moveTo(90,-80);
+    ctx.bezierCurveTo(105,-50,118,-10,110,60);
+    ctx.stroke();
+
+    // Staff / scepter in right hand
+    ctx.beginPath();
+    ctx.moveTo(112,55);ctx.lineTo(105,155);
+    ctx.stroke();
+    // top of staff orb
+    ctx.beginPath();
+    ctx.arc(113,52,5,0,Math.PI*2);
+    ctx.globalAlpha=alpha*0.4;
+    ctx.stroke();
+    ctx.globalAlpha=alpha;
+
+    // Laurel wreath on head
+    for(let i=0;i<12;i++){
+      const angle=(i/12)*Math.PI*2;
+      const lx=Math.cos(angle)*30, ly=-195+Math.sin(angle)*16;
+      ctx.beginPath();
+      ctx.ellipse(lx,ly,5,3,angle,0,Math.PI*2);
+      ctx.globalAlpha=alpha*0.35;
+      ctx.stroke();
+      ctx.globalAlpha=alpha;
+    }
+
+    // Facial features
+    // eyes
+    ctx.beginPath();
+    ctx.arc(-10,-200,4,0,Math.PI*2);
+    ctx.arc(10,-200,4,0,Math.PI*2);
+    ctx.globalAlpha=alpha*0.3;
+    ctx.stroke();
+    ctx.globalAlpha=alpha;
+    // nose
+    ctx.beginPath();
+    ctx.moveTo(0,-197);ctx.lineTo(-3,-188);ctx.lineTo(3,-188);
+    ctx.globalAlpha=alpha*0.2;
+    ctx.stroke();
+    ctx.globalAlpha=alpha;
+
+    // Base / plinth
+    ctx.beginPath();
+    ctx.rect(-70,140,140,18);
+    ctx.globalAlpha=alpha*0.15;
+    ctx.stroke();
+    ctx.globalAlpha=alpha;
+    ctx.beginPath();
+    ctx.rect(-90,158,180,12);
+    ctx.globalAlpha=alpha*0.1;
+    ctx.stroke();
+
+    ctx.restore();
+    ctx.restore();
+  }
+
+  // Particle dust floating around the figure
+  const particles=Array.from({length:50},()=>({
+    x:Math.random()*1, y:Math.random(),
+    vx:(Math.random()-.5)*.0003, vy:-Math.random()*.0004-.0001,
+    size:Math.random()*1.5+.5, alpha:Math.random()*.25+.05
+  }));
+
+  function drawParticles(){
+    particles.forEach(p=>{
+      ctx.beginPath();
+      ctx.arc(p.x*W, p.y*H, p.size, 0, Math.PI*2);
+      ctx.fillStyle=`rgba(200,195,185,${p.alpha})`;
+      ctx.fill();
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.y<0){p.y=1;p.x=Math.random();}
+      if(p.x<0||p.x>1){p.x=Math.random();}
+    });
+  }
+
+  function render(){
+    ctx.clearRect(0,0,W,H);
+    t+=0.008;
+
+    // Background atmosphere — dark radial glow behind figure
+    const radGrad=ctx.createRadialGradient(W*.5,H*.5,0,W*.5,H*.5,H*.55);
+    radGrad.addColorStop(0,'rgba(30,28,24,0.22)');
+    radGrad.addColorStop(1,'rgba(5,5,5,0)');
+    ctx.fillStyle=radGrad;
+    ctx.fillRect(0,0,W,H);
+
+    drawGod(0.13+Math.sin(t*.3)*.025, t);
+    drawParticles();
+    requestAnimationFrame(render);
+  }
+  render();
+})();
+
+/* ══════════════════════════════════════════
+   WATER RIPPLE EFFECT — mouse/touch reactive
+══════════════════════════════════════════ */
+(function(){
+  const canvas=document.getElementById('rippleCanvas');
+  const ctx=canvas.getContext('2d');
+  let W,H;
+  const ripples=[];
+
+  function resize(){
+    W=canvas.width=canvas.offsetWidth;
+    H=canvas.height=canvas.offsetHeight;
+  }
+  window.addEventListener('resize',resize);
+  resize();
+
+  function addRipple(x,y){
+    ripples.push({x,y,r:0,maxR:Math.random()*180+120,alpha:0.45,speed:Math.random()*3+2.5});
+    // add a few secondary smaller ripples
+    for(let i=0;i<2;i++){
+      setTimeout(()=>{
+        ripples.push({
+          x:x+(Math.random()-.5)*40, y:y+(Math.random()-.5)*40,
+          r:0, maxR:Math.random()*80+40, alpha:0.28, speed:Math.random()*2+2
+        });
+      },i*120+80);
+    }
+  }
+
+  // Mouse
+  const hero=document.getElementById('hero');
+  hero.addEventListener('mousemove',e=>{
+    if(Math.random()>.85) addRipple(e.clientX, e.clientY);
+  });
+  hero.addEventListener('click',e=>addRipple(e.clientX,e.clientY));
+
+  // Touch
+  hero.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    Array.from(e.touches).forEach(t=>{
+      if(Math.random()>.5) addRipple(t.clientX,t.clientY);
+    });
+  },{passive:false});
+  hero.addEventListener('touchstart',e=>{
+    Array.from(e.touches).forEach(t=>addRipple(t.clientX,t.clientY));
+  });
+
+  function render(){
+    ctx.clearRect(0,0,W,H);
+    for(let i=ripples.length-1;i>=0;i--){
+      const rip=ripples[i];
+      rip.r+=rip.speed;
+      rip.alpha*=0.965;
+      if(rip.alpha<0.008||rip.r>rip.maxR){ripples.splice(i,1);continue;}
+
+      // concentric ring
+      ctx.beginPath();
+      ctx.arc(rip.x,rip.y,rip.r,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(220,215,205,${rip.alpha})`;
+      ctx.lineWidth=1;
+      ctx.stroke();
+
+      // inner faint fill shimmer
+      const grad=ctx.createRadialGradient(rip.x,rip.y,rip.r*.6,rip.x,rip.y,rip.r);
+      grad.addColorStop(0,'rgba(220,215,205,0)');
+      grad.addColorStop(1,`rgba(220,215,205,${rip.alpha*.12})`);
+      ctx.beginPath();
+      ctx.arc(rip.x,rip.y,rip.r,0,Math.PI*2);
+      ctx.fillStyle=grad;
+      ctx.fill();
+    }
+    requestAnimationFrame(render);
+  }
+  render();
+})();
+</script>
+
+</body>
+</html>
